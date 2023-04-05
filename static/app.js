@@ -1,67 +1,58 @@
 
 // funciones de graficado y publicación de data
-function doughnut_report(n_problems_close, n_problems_open) {
-    var canvas = document.getElementById('doughnut-chart');
-    if (canvas.chart) {
-        canvas.chart.destroy();
-    }
-    canvas.innerHTML = "";
-    var ctx = canvas.getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'doughnut',
+function bar_chart(labels, datum, title_chart) {
+    const container = document.getElementById('container');
+    const newDiv = document.createElement('div');
+    newDiv.className = 'col-lg-6 col-md-12';
+    container.appendChild(newDiv);
+    const canvas = document.createElement('canvas');
+    canvas.id = 'bar-chart';
+    newDiv.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const data = generateBarChartData(labels, datum);
+    const config = {
+        type: 'bar',
         data: {
-            labels: ['Closed', 'Open'],
-            datasets: [{
-                label: 'Problems',
-                data: [n_problems_close, n_problems_open],
-                backgroundColor: ['#6F2DA8', '#B4DC00'],
-                borderWidth: 0
-            }]
+            labels: labels,
+            datasets: data
         },
         options: {
-            legend: {
-                position: 'top',
-                labels: {
-                    fontColor: '#242424',
-                    boxWidth: 20,
-                    padding: 10,
-                    generateLabels: function (chart) {
-                        var data = chart.data;
-                        return data.labels.map(function (label, i) {
-                            var meta = chart.getDatasetMeta(0);
-                            var ds = data.datasets[0];
-                            var arc = meta.data[i];
-                            var custom = arc && arc.custom || {};
-                            var getValueAtIndexOrDefault = Chart.helpers.getValueAtIndexOrDefault;
-                            var arcOpts = chart.options.elements.arc;
-                            var fill = custom.backgroundColor ? custom.backgroundColor : getValueAtIndexOrDefault(ds.backgroundColor, i, arcOpts.backgroundColor);
-                            var stroke = custom.borderColor ? custom.borderColor : getValueAtIndexOrDefault(ds.borderColor, i, arcOpts.borderColor);
-                            var bw = custom.borderWidth ? custom.borderWidth : getValueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
-                            return {
-                                text: label + ': ' + ds.data[i],
-                                fillStyle: fill,
-                                strokeStyle: stroke,
-                                lineWidth: bw,
-                                hidden: isNaN(ds.data[i]) || meta.data[i].hidden,
-                                index: i
-                            };
-                        });
-                    }
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: title_chart
                 }
-            },
-            title: {
-                display: true,
-                text: 'Cantidad de Problemas por estado'
             }
         }
-    });
-    canvas.chart = chart;
-
+    };
+    new Chart(ctx, config);
+    console.log(data);
 }
 
+function generateBarChartData(labels, datum) {
+    const colors = ['#6F2DA8', '#B4DC00', '#ff8c00', '#008b8b'];
+    const data = [];
+    for (let i = 0; i < labels.length; i++) {
+        const colorIndex = i % colors.length;
+        const color = colors[colorIndex];
+        const item = {
+            label: labels[i],
+            data: [datum[i]],
+            backgroundColor: color
+        };
+        data.push(item);
+    }
+    return data;
+}
+
+
 // Principal orquestador
-async function generate(event) {
-    
+function generate() {
+
     //loading animation starts
     const loadingDiv = document.createElement("div");
     loadingDiv.setAttribute("id", "loading");
@@ -72,7 +63,9 @@ async function generate(event) {
 
     // BEGIN Graphics functions
     //n_custom_alerts = problems_details.reduce((count, problem) => problem.severityLevel === 'CUSTOM_ALERT' ? count + 1 : count, 0);
-    doughnut_report()
+    const labels = ['Dataset 1', 'Dataset 2', 'Dataset N', 'Dataset N2'];
+    const datum = [10, 20, 30, 80];
+    bar_chart(labels, datum, "este es el primer chart barra de romerin");
     // END Graphics functions
 
     //loading animation ends
